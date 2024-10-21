@@ -57,12 +57,15 @@ app.UseOutputCache();
 
 //app.MapGet("/", [EnableCors("libre")] () => "Hello World!");
 
-app.MapGet("/generos", async (IRepositorioGeneros repo) =>
+//Crea un grupo de endpoints para evitar codigo repetitivo
+var endPointGeneros = app.MapGroup("/generos");
+
+endPointGeneros.MapGet("/", async (IRepositorioGeneros repo) =>
 {
     return await repo.ObtenerTodos();
 }).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get"));
 
-app.MapGet("/generos/{id:int}", async (IRepositorioGeneros repo, int id) => {
+endPointGeneros.MapGet("/{id:int}", async (IRepositorioGeneros repo, int id) => {
     var genero = await repo.ObtenerPorId(id);
     if (genero is null)
     {
@@ -71,10 +74,34 @@ app.MapGet("/generos/{id:int}", async (IRepositorioGeneros repo, int id) => {
     return Results.Ok(genero);
 });
 
-app.MapPost("/generos", async (Genero genero, IRepositorioGeneros repo, IOutputCacheStore output) => {
+endPointGeneros.MapPost("/", async (Genero genero, IRepositorioGeneros repo, IOutputCacheStore output) => {
     var id = await repo.Crear(genero);
     await output.EvictByTagAsync("generos_get", default); //Eliminar cache despues de agregar un registro
     return Results.Created($"/generos/{id}",genero);
+});
+
+endPointGeneros.MapPut("/{id:int}", async (int id, Genero genero,IRepositorioGeneros repo, IOutputCacheStore output) => {
+    var existe = await repo.Existe(id);
+    if (!existe)
+    {
+        return Results.NotFound();
+    }
+
+    await repo.Actualizar(genero);
+    await output.EvictByTagAsync("generos_get", default);
+    return Results.NoContent();
+});
+
+endPointGeneros.MapDelete("/{id:int}", async (int id, IRepositorioGeneros repo, IOutputCacheStore output) => {
+    var existe = await repo.Existe(id);
+    if (!existe)
+    {
+        return Results.NotFound();
+    }
+
+    await repo.Borrar(id);
+    await output.EvictByTagAsync("generos_get", default);
+    return Results.NoContent();
 });
 
 //Fin Middleware
