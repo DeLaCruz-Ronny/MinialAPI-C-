@@ -1,12 +1,18 @@
 
 
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.EntityFrameworkCore;
+using minimalAPIPeliculas;
 using minimalAPIPeliculas.Entidades;
+using minimalAPIPeliculas.Repositorios;
 var builder = WebApplication.CreateBuilder(args);
 var origenesPermitidos = builder.Configuration.GetValue<string>("origenesPermitidos")!;
 
 //Inicio del area de los servicios
 
+//Conexion
+builder.Services.AddDbContext<ApplicationDbContext>(opciones => opciones.UseSqlServer(builder.Configuration.GetConnectionString("Cadena")));
 
 //CORS
 builder.Services.AddCors(opciones =>
@@ -29,6 +35,7 @@ builder.Services.AddOutputCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
 
 //Fin del area de los servicios
 
@@ -48,28 +55,27 @@ app.UseCors();
 
 app.UseOutputCache();
 
-app.MapGet("/", [EnableCors("libre")] () => "Hello World!");
+//app.MapGet("/", [EnableCors("libre")] () => "Hello World!");
 
-app.MapGet("/generos", () =>
+app.MapGet("/generos", async (IRepositorioGeneros repo) =>
 {
-    var generos = new List<Genero>
-    {
-        new Genero {
-            Id = 1,
-            Nombre = "Accion"
-        },
-        new Genero {
-            Id = 2,
-            Nombre = "Drama"
-        },
-        new Genero {
-            Id = 3,
-            Nombre = "Comedia"
-        }
-    };
+    return await repo.ObtenerTodos();
+}).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get"));
 
-    return generos;
-}).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(15)));
+app.MapGet("/generos/{id:int}", async (IRepositorioGeneros repo, int id) => {
+    var genero = await repo.ObtenerPorId(id);
+    if (genero is null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(genero);
+});
+
+app.MapPost("/generos", async (Genero genero, IRepositorioGeneros repo, IOutputCacheStore output) => {
+    var id = await repo.Crear(genero);
+    await output.EvictByTagAsync("generos_get", default); //Eliminar cache despues de agregar un registro
+    return Results.Created($"/generos/{id}",genero);
+});
 
 //Fin Middleware
 app.Run();
