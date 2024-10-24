@@ -1,11 +1,14 @@
 
 
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using minimalAPIPeliculas;
+using minimalAPIPeliculas.Endpoints;
 using minimalAPIPeliculas.Entidades;
 using minimalAPIPeliculas.Repositorios;
+using minimalAPIPeliculas.Servicios;
 var builder = WebApplication.CreateBuilder(args);
 var origenesPermitidos = builder.Configuration.GetValue<string>("origenesPermitidos")!;
 
@@ -36,6 +39,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
+builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
+builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArichivosAzure>();
+
+builder.Services.AddAutoMapper(typeof(Program));
 
 //Fin del area de los servicios
 
@@ -58,51 +65,10 @@ app.UseOutputCache();
 //app.MapGet("/", [EnableCors("libre")] () => "Hello World!");
 
 //Crea un grupo de endpoints para evitar codigo repetitivo
-var endPointGeneros = app.MapGroup("/generos");
+app.MapGroup("/generos").MapGeneros();
+app.MapGroup("/actores").MapActores();
 
-endPointGeneros.MapGet("/", async (IRepositorioGeneros repo) =>
-{
-    return await repo.ObtenerTodos();
-}).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get"));
-
-endPointGeneros.MapGet("/{id:int}", async (IRepositorioGeneros repo, int id) => {
-    var genero = await repo.ObtenerPorId(id);
-    if (genero is null)
-    {
-        return Results.NotFound();
-    }
-    return Results.Ok(genero);
-});
-
-endPointGeneros.MapPost("/", async (Genero genero, IRepositorioGeneros repo, IOutputCacheStore output) => {
-    var id = await repo.Crear(genero);
-    await output.EvictByTagAsync("generos_get", default); //Eliminar cache despues de agregar un registro
-    return Results.Created($"/generos/{id}",genero);
-});
-
-endPointGeneros.MapPut("/{id:int}", async (int id, Genero genero,IRepositorioGeneros repo, IOutputCacheStore output) => {
-    var existe = await repo.Existe(id);
-    if (!existe)
-    {
-        return Results.NotFound();
-    }
-
-    await repo.Actualizar(genero);
-    await output.EvictByTagAsync("generos_get", default);
-    return Results.NoContent();
-});
-
-endPointGeneros.MapDelete("/{id:int}", async (int id, IRepositorioGeneros repo, IOutputCacheStore output) => {
-    var existe = await repo.Existe(id);
-    if (!existe)
-    {
-        return Results.NotFound();
-    }
-
-    await repo.Borrar(id);
-    await output.EvictByTagAsync("generos_get", default);
-    return Results.NoContent();
-});
 
 //Fin Middleware
 app.Run();
+
