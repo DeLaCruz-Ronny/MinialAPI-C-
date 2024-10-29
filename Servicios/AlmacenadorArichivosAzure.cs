@@ -14,7 +14,8 @@ namespace minimalAPIPeliculas.Servicios
 
         public AlmacenadorArichivosAzure(IConfiguration configuration)
         {
-            connectionString = configuration.GetConnectionString("AzureStorage")!;
+            // connectionString = configuration.GetConnectionString("AzureStorage")!;
+            connectionString = configuration["AzureStorage"]!;
         }
         public async Task<string> Almacenar(string contenedor, IFormFile archivo)
         {

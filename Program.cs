@@ -9,6 +9,7 @@ using minimalAPIPeliculas.Endpoints;
 using minimalAPIPeliculas.Entidades;
 using minimalAPIPeliculas.Repositorios;
 using minimalAPIPeliculas.Servicios;
+
 var builder = WebApplication.CreateBuilder(args);
 var origenesPermitidos = builder.Configuration.GetValue<string>("origenesPermitidos")!;
 
@@ -41,8 +42,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
 builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
 builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArichivosAzure>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Configuration.AddUserSecrets<Program>();
 
 //Fin del area de los servicios
 

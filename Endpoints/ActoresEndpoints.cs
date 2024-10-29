@@ -24,8 +24,10 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapPost("/", Crear).DisableAntiforgery();
             return group;
         }
-        static async Task<Ok<List<ActorDTO>>> ObtenerTodos(IRepositorioActores repositorio, IMapper mapper){
-            var actores = await repositorio.ObtenerTodos();
+        static async Task<Ok<List<ActorDTO>>> ObtenerTodos(IRepositorioActores repositorio, IMapper mapper, int pagina = 1, int recordsPorPagina = 10)
+        {
+            var paginacion = new PaginacionDTO{ Pagina = pagina, RecordsPorPagina = recordsPorPagina };
+            var actores = await repositorio.ObtenerTodos(paginacion);
             var actoresdto = mapper.Map<List<ActorDTO>>(actores);
             return TypedResults.Ok(actoresdto);
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using minimalAPIPeliculas.DTOs;
 using minimalAPIPeliculas.Entidades;
 
 namespace minimalAPIPeliculas.Repositorios
@@ -14,6 +15,6 @@ namespace minimalAPIPeliculas.Repositorios
         Task<bool> Existe(int id);
         Task<Actor?> ObtenerPorId(int id);
         Task<List<Actor>> ObtenerPorNombre(string nombre);
-        Task<List<Actor>> ObtenerTodos();
+        Task<List<Actor>> ObtenerTodos(PaginacionDTO paginacionDTO);
     }
 }
