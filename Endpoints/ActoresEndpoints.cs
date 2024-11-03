@@ -22,6 +22,8 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapGet("/{id:int}", ObtenerPorId);
             group.MapGet("obtenerPorNombre/{nombre}", ObtenerPorNombre);
             group.MapPost("/", Crear).DisableAntiforgery();
+            group.MapPut("/{id:int}", Actualizar).DisableAntiforgery();
+            group.MapDelete("/{id:int}", Borrar);
             return group;
         }
         static async Task<Ok<List<ActorDTO>>> ObtenerTodos(IRepositorioActores repositorio, IMapper mapper, int pagina = 1, int recordsPorPagina = 10)
@@ -63,6 +65,42 @@ namespace minimalAPIPeliculas.Endpoints
             await outputCacheStore.EvictByTagAsync("actores-get", default);
             var actorDTO = mapper.Map<ActorDTO>(actor);
             return TypedResults.Created($"/actores/{id}", actorDTO);
+        }
+
+        static async Task<Results<NoContent, NotFound>> Actualizar(int id,[FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorioActores, IAlmacenadorArchivos almacenadorArchivos, IOutputCacheStore outputCacheStore, IMapper mapper){
+            var actorDB = await repositorioActores.ObtenerPorId(id);
+
+            if (actorDB is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var actorparaactualizar = mapper.Map<Actor>(crearActorDTO);
+            actorparaactualizar.Id = id;
+            actorparaactualizar.Foto = actorDB.Foto;
+
+            if (crearActorDTO.Foto is not null)
+            {
+                var url = await almacenadorArchivos.Editar(actorparaactualizar.Foto, contenedor, crearActorDTO.Foto);
+                actorparaactualizar.Foto = url;
+            }
+
+            await repositorioActores.Actualizar(actorparaactualizar);
+            await outputCacheStore.EvictByTagAsync("actores-get", default);
+            return TypedResults.NoContent();
+        }
+
+        static async Task<Results<NoContent, NotFound>> Borrar(int id, IRepositorioActores repositorioActores, IOutputCacheStore outputCacheStore, IAlmacenadorArchivos almacenadorArchivos){
+            var actorDB = await repositorioActores.ObtenerPorId(id);
+            if (actorDB is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            await repositorioActores.Borrar(id);
+            await almacenadorArchivos.Borrar(actorDB.Foto, contenedor);
+            await outputCacheStore.EvictByTagAsync("actores-get", default);
+            return TypedResults.NoContent();
         }
     }
 }
