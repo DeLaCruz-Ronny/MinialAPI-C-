@@ -41,6 +41,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IRepositorioGeneros, RepositorioGeneros>();
 builder.Services.AddScoped<IRepositorioActores, RepositorioActores>();
+builder.Services.AddScoped<IRepositorioPeliculas, RepositorioPeliculas>();
 builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArichivosAzure>();
 builder.Services.AddHttpContextAccessor();
 
@@ -71,6 +72,7 @@ app.UseOutputCache();
 //Crea un grupo de endpoints para evitar codigo repetitivo
 app.MapGroup("/generos").MapGeneros();
 app.MapGroup("/actores").MapActores();
+app.MapGroup("/peliculas").MapPeliculas();
 
 
 //Fin Middleware
