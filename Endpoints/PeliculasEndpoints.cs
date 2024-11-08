@@ -21,6 +21,8 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapGet("/", Obtener).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("peliculas-get"));
             group.MapGet("/{id:int}", ObtenerPorId);
             group.MapPost("/", Crear).DisableAntiforgery();
+            group.MapPut("/{id:int}",Actualizar).DisableAntiforgery();
+            group.MapDelete("/{id:int}", Borrar);
             return group;
         }
 
@@ -58,6 +60,46 @@ namespace minimalAPIPeliculas.Endpoints
 
             var pelidulaDTO = mapper.Map<PeliculaDTO>(pelicula);
             return TypedResults.Ok(pelidulaDTO);
+        }
+
+        static async Task<Results<NoContent, NotFound>> Actualizar(int id, [FromForm] CrearPeliculaDTO crearPeliculaDTO,
+        IRepositorioPeliculas repositorioPeliculas, IAlmacenadorArchivos almacenadorArchivos, IOutputCacheStore outputCacheStore, IMapper mapper)
+        {
+            var peliculaDB = await repositorioPeliculas.ObtenerPorId(id);
+
+            if (peliculaDB is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var peliculaActualizar = mapper.Map<Pelicula>(crearPeliculaDTO);
+            peliculaActualizar.Id = id;
+            peliculaActualizar.Poster = peliculaActualizar.Poster;
+
+            if (crearPeliculaDTO.Poster is not null)
+            {
+                var url = await almacenadorArchivos.Editar(peliculaActualizar.Poster,contenedor,crearPeliculaDTO.Poster);
+                peliculaActualizar.Poster = url;
+            }
+
+            await repositorioPeliculas.ActualizarPelicula(peliculaActualizar);
+            await outputCacheStore.EvictByTagAsync("peliculas-get", default);
+            return TypedResults.NoContent();
+        }
+
+        static async Task<Results<NoContent, NotFound>> Borrar(int id,IRepositorioPeliculas repositorioPeliculas, IAlmacenadorArchivos almacenadorArchivos, IOutputCacheStore outputCacheStore)
+        {
+            var peliculaDB = await repositorioPeliculas.ObtenerPorId(id);
+
+            if (peliculaDB is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            await repositorioPeliculas.Borrar(id);
+            await almacenadorArchivos.Borrar(peliculaDB.Poster, contenedor);
+            await outputCacheStore.EvictByTagAsync("peliculas-get", default);
+            return TypedResults.NoContent();
         }
     }
 }
