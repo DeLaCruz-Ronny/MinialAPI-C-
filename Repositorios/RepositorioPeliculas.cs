@@ -29,7 +29,10 @@ namespace minimalAPIPeliculas.Repositorios
 
         public async Task<Pelicula?> ObtenerPorId(int id)
         {
-            return await context.Peliculas.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            return await context.Peliculas
+            .Include(p => p.Comentario)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<int> Crear(Pelicula pelicula)

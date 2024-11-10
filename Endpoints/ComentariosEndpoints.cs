@@ -18,6 +18,8 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapGet("/",ObtenerTodos).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("comentarios-get").SetVaryByRouteValue(new string[] {"peliculaId"}));
             group.MapGet("/{id:int}",ObtenerPorId);
             group.MapPost("/", Crear);
+            group.MapPut("/{id:int}", Actualizar);
+            group.MapDelete("/{id:int}", Borrar);
             return group;
         }
 
@@ -59,6 +61,39 @@ namespace minimalAPIPeliculas.Endpoints
             var comentarioDTO = mapper.Map<ComentarioDTO>(comentario);
             return TypedResults.Created($"/comentario/{id}", comentarioDTO);
 
+        }
+
+        static async Task<Results<NoContent, NotFound>> Actualizar(int peliculaId, int id,CrearComentarioDTO crearComentarioDTO, IRepositorioComentarios repositorioComentarios,IRepositorioPeliculas repositorioPeliculas,IMapper mapper, IOutputCacheStore outputCacheStore)
+        {
+            if (! await repositorioPeliculas.Existe(peliculaId))
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (! await repositorioComentarios.Existe(id))
+            {
+                return TypedResults.NotFound();
+            }
+
+            var comentario = mapper.Map<Comentario>(crearComentarioDTO);
+            comentario.Id = id;
+            comentario.PeliculaId = peliculaId;
+
+            await repositorioComentarios.Actualizar(comentario);
+            await outputCacheStore.EvictByTagAsync("comentarios-get",default);
+            return TypedResults.NoContent();
+        }
+
+        static async Task<Results<NoContent, NotFound>> Borrar(int peliculaId,int id, IRepositorioComentarios repositorioComentarios,IOutputCacheStore outputCacheStore)
+        {
+            if (! await repositorioComentarios.Existe(id))
+            {
+                return TypedResults.NotFound();
+            }
+
+            await repositorioComentarios.Borrar(id);
+            await outputCacheStore.EvictByTagAsync("comentarios-get",default);
+            return TypedResults.NoContent();
         }
     }
 }
