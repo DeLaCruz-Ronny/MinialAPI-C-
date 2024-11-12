@@ -16,6 +16,7 @@ namespace minimalAPIPeliculas.Entidades
         public DateTime FechaLanzamiento { get; set; }
         [Unicode(true)]
         public string? Poster { get; set; }
-        public List<Comentario> Comentario { get; set; } = new List<Comentario>();
+        public List<Comentario> Comentarios { get; set; } = new List<Comentario>();
+        public List<GeneroPelicula> GenerosPeliculas {get; set;} = new List<GeneroPelicula>();
     }
 }

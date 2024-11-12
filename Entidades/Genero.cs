@@ -12,5 +12,6 @@ namespace minimalAPIPeliculas.Entidades
 
         [StringLength(50)]
         public string Nombre { get; set; } = null!;
+        public List<GeneroPelicula> GenerosPeliculas {get; set;} = new List<GeneroPelicula>();
     }
 }

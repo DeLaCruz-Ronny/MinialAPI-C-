@@ -13,9 +13,17 @@ namespace minimalAPIPeliculas
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<GeneroPelicula>().HasKey(g => new { g.GeneroId, g.PeliculaId });
+        }
+
         public DbSet<Genero> Generos { get; set; }
         public DbSet<Actor> Actores { get; set; }
-        public DbSet<Pelicula> Peliculas {get; set;}
-        public DbSet<Comentario> Comentarios {get; set;}
+        public DbSet<Pelicula> Peliculas { get; set; }
+        public DbSet<Comentario> Comentarios { get; set; }
+        public DbSet<GeneroPelicula> GeneroPeliculas { get; set; }
     }
 }

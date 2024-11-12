@@ -49,5 +49,10 @@ namespace minimalAPIPeliculas.Repositorios
         {
             return await context.Generos.OrderBy(x => x.Nombre).ToListAsync();
         }
+
+        public async Task<List<int>> Existen(List<int> ids)
+        {
+            return await context.Generos.Where(g => ids.Contains(g.Id)).Select(g => g.Id).ToListAsync();
+        }
     }
 }
