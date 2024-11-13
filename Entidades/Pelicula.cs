@@ -18,5 +18,6 @@ namespace minimalAPIPeliculas.Entidades
         public string? Poster { get; set; }
         public List<Comentario> Comentarios { get; set; } = new List<Comentario>();
         public List<GeneroPelicula> GenerosPeliculas {get; set;} = new List<GeneroPelicula>();
+        public List<ActorPelicula> ActoresPeliculas { get; set; } = new List<ActorPelicula>();
     }
 }

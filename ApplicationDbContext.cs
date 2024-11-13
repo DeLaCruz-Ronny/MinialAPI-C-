@@ -18,6 +18,8 @@ namespace minimalAPIPeliculas
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<GeneroPelicula>().HasKey(g => new { g.GeneroId, g.PeliculaId });
+
+            modelBuilder.Entity<ActorPelicula>().HasKey(a => new { a.PeliculaId, a.ActorId });
         }
 
         public DbSet<Genero> Generos { get; set; }
@@ -25,5 +27,6 @@ namespace minimalAPIPeliculas
         public DbSet<Pelicula> Peliculas { get; set; }
         public DbSet<Comentario> Comentarios { get; set; }
         public DbSet<GeneroPelicula> GeneroPeliculas { get; set; }
+        public DbSet<ActorPelicula> ActoresPeliculas { get; set; }
     }
 }

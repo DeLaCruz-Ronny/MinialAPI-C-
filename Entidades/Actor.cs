@@ -15,5 +15,6 @@ namespace minimalAPIPeliculas.Entidades
         public DateTime FechaNacimiento { get; set; }
         [Unicode(true)]
         public string? Foto { get; set; }
+        public List<ActorPelicula> ActoresPeliculas { get; set; } = new List<ActorPelicula>();
     }
 }
