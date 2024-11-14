@@ -11,6 +11,7 @@ namespace minimalAPIPeliculas.Repositorios
     {
         Task ActualizarPelicula(Pelicula pelicula);
         Task AsignarGenerosa(int id, List<int> generosIds);
+        Task AsignarActores(int id, List<ActorPelicula> actores);
         Task Borrar(int id);
         Task<int> Crear(Pelicula pelicula);
         Task<bool> Existe(int id);

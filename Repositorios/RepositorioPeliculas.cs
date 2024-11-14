@@ -34,6 +34,10 @@ namespace minimalAPIPeliculas.Repositorios
         {
             return await context.Peliculas
             .Include(p => p.Comentarios)
+            .Include(p => p.GenerosPeliculas)
+                .ThenInclude(gp => gp.Genero)
+            .Include(p => p.ActoresPeliculas.OrderBy(a => a.Orden))
+                .ThenInclude(ap => ap.Actor)
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
         }
@@ -74,6 +78,24 @@ namespace minimalAPIPeliculas.Repositorios
 
             pelicula.GenerosPeliculas = mapper.Map(generoPelicula, pelicula.GenerosPeliculas);
 
+            await context.SaveChangesAsync();
+        }
+
+        public async Task AsignarActores(int id, List<ActorPelicula> actores)
+        {
+            for (int i = 1; i <= actores.Count; i++)
+            {
+                actores[i - 1].Orden = i;
+            }
+
+            var pelicula = await context.Peliculas.Include(p => p.ActoresPeliculas).FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pelicula is null)
+            {
+                throw new ArgumentException($"No existe una pelicula con el Id: {id}");
+            }
+
+            pelicula.ActoresPeliculas = mapper.Map(actores, pelicula.ActoresPeliculas);
             await context.SaveChangesAsync();
         }
     }

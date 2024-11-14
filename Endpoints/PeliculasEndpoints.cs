@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using minimalAPIPeliculas.DTOs;
 using minimalAPIPeliculas.Entidades;
+using minimalAPIPeliculas.Migrations;
 using minimalAPIPeliculas.Repositorios;
 using minimalAPIPeliculas.Servicios;
 
@@ -24,6 +25,7 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapPut("/{id:int}",Actualizar).DisableAntiforgery();
             group.MapDelete("/{id:int}", Borrar);
             group.MapPost("/{id:int}/asignargeneros", AsignarGeneros);
+            group.MapPost("/{id:int}/asignaractores", AsignarActores);
             return group;
         }
 
@@ -124,6 +126,33 @@ namespace minimalAPIPeliculas.Endpoints
             }
 
             await repositorioPeliculas.AsignarGenerosa(id, generosIds);
+            return TypedResults.NoContent();
+        }
+
+        static async Task<Results<NoContent, NotFound, BadRequest<string>>> AsignarActores(int id,List<AsignarActorPeliculaDTO> actoresDTO,IRepositorioPeliculas repositorioPeliculas, IRepositorioActores repositorioActores, IMapper mapper)
+        {
+            if (! await repositorioPeliculas.Existe(id))
+            {
+                return TypedResults.NotFound();
+            }
+
+            var actoresExistentes = new List<int>();
+            var actoresIds = actoresDTO.Select(a => a.ActorId).ToList();
+
+            if (actoresDTO.Count != 0)
+            {
+                actoresExistentes = await repositorioActores.Existen(actoresIds);
+            }
+
+            if (actoresExistentes.Count != actoresDTO.Count)
+            {
+                var actoresNoExistentes = actoresIds.Except(actoresExistentes);
+                return TypedResults.BadRequest($"Los actores de id {string.Join(",",actoresNoExistentes)} no existen.");
+            }
+
+            var actores = mapper.Map<List<ActorPelicula>>(actoresDTO);
+
+            await repositorioPeliculas.AsignarActores(id,actores);
             return TypedResults.NoContent();
         }
     }
