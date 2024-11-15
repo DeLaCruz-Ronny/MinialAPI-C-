@@ -159,3 +159,14 @@ C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\n
 C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
 C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Azure.Storage.Blobs.dll
 C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Azure.Storage.Common.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Logging.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
+C:\Users\rmdpd\OneDrive\Escritorio\GuiaMinialAPI\minimalAPIPeliculas\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll

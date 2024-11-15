@@ -15,7 +15,8 @@ namespace minimalAPIPeliculas.Endpoints
     {
         public static RouteGroupBuilder MapGeneros(this RouteGroupBuilder group)
         {
-            group.MapGet("/", ObtenerGeneros).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get"));
+            group.MapGet("/", ObtenerGeneros)
+                .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get")).RequireAuthorization();
             group.MapGet("/{id:int}", ObtenerGeneroPorId);
             group.MapPost("/", CrearGenero);
             group.MapPut("/{id:int}", ActualizarGenero);

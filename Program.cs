@@ -2,13 +2,16 @@
 
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using minimalAPIPeliculas;
 using minimalAPIPeliculas.Endpoints;
 using minimalAPIPeliculas.Entidades;
 using minimalAPIPeliculas.Repositorios;
 using minimalAPIPeliculas.Servicios;
+using minimalAPIPeliculas.Utilidades;
 
 var builder = WebApplication.CreateBuilder(args);
 var origenesPermitidos = builder.Configuration.GetValue<string>("origenesPermitidos")!;
@@ -17,6 +20,13 @@ var origenesPermitidos = builder.Configuration.GetValue<string>("origenesPermiti
 
 //Conexion
 builder.Services.AddDbContext<ApplicationDbContext>(opciones => opciones.UseSqlServer(builder.Configuration.GetConnectionString("Cadena")));
+
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<UserManager<IdentityUser>>();
+builder.Services.AddScoped<SignInManager<IdentityUser>>();
 
 //CORS
 builder.Services.AddCors(opciones =>
@@ -50,6 +60,20 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Configuration.AddUserSecrets<Program>();
 
+builder.Services.AddAuthentication().AddJwtBearer(opciones => 
+opciones.TokenValidationParameters = new TokenValidationParameters 
+{
+    ValidateIssuer = false,
+    ValidateAudience = false,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    //IssuerSigningKey = Llaves.ObtenerTodasLlave(builder.Configuration).First(),
+    IssuerSigningKeys = Llaves.ObtenerTodasLlave(builder.Configuration),
+    ClockSkew = TimeSpan.Zero
+});
+
+builder.Services.AddAuthorization();
+
 //Fin del area de los servicios
 
 var app = builder.Build();
@@ -67,6 +91,8 @@ app.UseSwaggerUI();
 app.UseCors();
 
 app.UseOutputCache();
+
+app.UseAuthorization();
 
 //app.MapGet("/", [EnableCors("libre")] () => "Hello World!");
 
