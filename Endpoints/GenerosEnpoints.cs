@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using minimalAPIPeliculas.DTOs;
@@ -42,8 +43,14 @@ namespace minimalAPIPeliculas.Endpoints
             return TypedResults.Ok(generodto);
         }
 
-        static async Task<Created<GeneroDTO>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper)
+        static async Task<Results<Created<GeneroDTO>, ValidationProblem>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper, IValidator<CrearGeneroDTO> validador)
         {
+            //Usando FluentValidation
+            var resultadoValidacion = await validador.ValidateAsync(crearGeneroDTO);
+            if (!resultadoValidacion.IsValid)
+            {
+                return TypedResults.ValidationProblem(resultadoValidacion.ToDictionary());
+            }
             var genero = mapper.Map<Genero>(crearGeneroDTO);
             var id = await repo.Crear(genero);
             await output.EvictByTagAsync("generos_get", default); //Eliminar cache despues de agregar un registro
@@ -51,8 +58,14 @@ namespace minimalAPIPeliculas.Endpoints
             return TypedResults.Created($"/generos/{id}", generodto);
         }
 
-        static async Task<Results<NoContent, NotFound>> ActualizarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper)
+        static async Task<Results<NoContent, NotFound, ValidationProblem>> ActualizarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper, IValidator<CrearGeneroDTO> validador)
         {
+            var resultadoValidacion = await validador.ValidateAsync(crearGeneroDTO);
+            if (!resultadoValidacion.IsValid)
+            {
+                return TypedResults.ValidationProblem(resultadoValidacion.ToDictionary());
+            }
+
             var existe = await repo.Existe(id);
             if (!existe)
             {

@@ -1,5 +1,6 @@
 
 
+using FluentValidation;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -57,6 +58,8 @@ builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArichivosAzure>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Configuration.AddUserSecrets<Program>();
 
