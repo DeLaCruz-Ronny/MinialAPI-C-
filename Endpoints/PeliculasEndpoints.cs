@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using minimalAPIPeliculas.DTOs;
 using minimalAPIPeliculas.Entidades;
+using minimalAPIPeliculas.Filtros;
 using minimalAPIPeliculas.Migrations;
 using minimalAPIPeliculas.Repositorios;
 using minimalAPIPeliculas.Servicios;
@@ -21,8 +22,8 @@ namespace minimalAPIPeliculas.Endpoints
         {
             group.MapGet("/", Obtener).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("peliculas-get"));
             group.MapGet("/{id:int}", ObtenerPorId);
-            group.MapPost("/", Crear).DisableAntiforgery();
-            group.MapPut("/{id:int}",Actualizar).DisableAntiforgery();
+            group.MapPost("/", Crear).DisableAntiforgery().AddEndpointFilter<FiltroValidaciones<CrearPeliculaDTO>>();
+            group.MapPut("/{id:int}",Actualizar).DisableAntiforgery().AddEndpointFilter<FiltroValidaciones<CrearPeliculaDTO>>();
             group.MapDelete("/{id:int}", Borrar);
             group.MapPost("/{id:int}/asignargeneros", AsignarGeneros);
             group.MapPost("/{id:int}/asignaractores", AsignarActores);

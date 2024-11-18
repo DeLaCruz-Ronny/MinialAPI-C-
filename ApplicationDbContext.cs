@@ -38,5 +38,6 @@ namespace minimalAPIPeliculas
         public DbSet<Comentario> Comentarios { get; set; }
         public DbSet<GeneroPelicula> GeneroPeliculas { get; set; }
         public DbSet<ActorPelicula> ActoresPeliculas { get; set; }
+        public DbSet<Error> Errores { get; set; }
     }
 }

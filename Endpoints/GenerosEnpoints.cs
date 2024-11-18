@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using minimalAPIPeliculas.DTOs;
 using minimalAPIPeliculas.Entidades;
+using minimalAPIPeliculas.Filtros;
 using minimalAPIPeliculas.Repositorios;
 
 namespace minimalAPIPeliculas.Endpoints
@@ -19,8 +20,8 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapGet("/", ObtenerGeneros)
                 .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get")).RequireAuthorization();
             group.MapGet("/{id:int}", ObtenerGeneroPorId);
-            group.MapPost("/", CrearGenero);
-            group.MapPut("/{id:int}", ActualizarGenero);
+            group.MapPost("/", CrearGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>();
+            group.MapPut("/{id:int}", ActualizarGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>();
             group.MapDelete("/{id:int}", BorrarGenero);
             return group;
         }
@@ -43,14 +44,9 @@ namespace minimalAPIPeliculas.Endpoints
             return TypedResults.Ok(generodto);
         }
 
-        static async Task<Results<Created<GeneroDTO>, ValidationProblem>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper, IValidator<CrearGeneroDTO> validador)
+        static async Task<Results<Created<GeneroDTO>, ValidationProblem>> CrearGenero(CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper)
         {
-            //Usando FluentValidation
-            var resultadoValidacion = await validador.ValidateAsync(crearGeneroDTO);
-            if (!resultadoValidacion.IsValid)
-            {
-                return TypedResults.ValidationProblem(resultadoValidacion.ToDictionary());
-            }
+            
             var genero = mapper.Map<Genero>(crearGeneroDTO);
             var id = await repo.Crear(genero);
             await output.EvictByTagAsync("generos_get", default); //Eliminar cache despues de agregar un registro
@@ -58,14 +54,9 @@ namespace minimalAPIPeliculas.Endpoints
             return TypedResults.Created($"/generos/{id}", generodto);
         }
 
-        static async Task<Results<NoContent, NotFound, ValidationProblem>> ActualizarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper, IValidator<CrearGeneroDTO> validador)
+        static async Task<Results<NoContent, NotFound, ValidationProblem>> ActualizarGenero(int id, CrearGeneroDTO crearGeneroDTO, IRepositorioGeneros repo, IOutputCacheStore output, IMapper mapper)
         {
-            var resultadoValidacion = await validador.ValidateAsync(crearGeneroDTO);
-            if (!resultadoValidacion.IsValid)
-            {
-                return TypedResults.ValidationProblem(resultadoValidacion.ToDictionary());
-            }
-
+            
             var existe = await repo.Existe(id);
             if (!existe)
             {

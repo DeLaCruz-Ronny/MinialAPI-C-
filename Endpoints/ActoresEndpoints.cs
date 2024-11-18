@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using minimalAPIPeliculas.DTOs;
 using minimalAPIPeliculas.Entidades;
+using minimalAPIPeliculas.Filtros;
 using minimalAPIPeliculas.Repositorios;
 using minimalAPIPeliculas.Servicios;
 
@@ -18,11 +20,11 @@ namespace minimalAPIPeliculas.Endpoints
         private static readonly string contenedor = "actores";
         public static RouteGroupBuilder MapActores(this RouteGroupBuilder group)
         {
-            group.MapGet("/", ObtenerTodos).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("actores-get"));
+            group.MapGet("/", ObtenerTodos); //.CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("actores-get"));
             group.MapGet("/{id:int}", ObtenerPorId);
             group.MapGet("obtenerPorNombre/{nombre}", ObtenerPorNombre);
-            group.MapPost("/", Crear).DisableAntiforgery();
-            group.MapPut("/{id:int}", Actualizar).DisableAntiforgery();
+            group.MapPost("/", Crear).DisableAntiforgery().AddEndpointFilter<FiltroValidaciones<CrearActorDTO>>();
+            group.MapPut("/{id:int}", Actualizar).DisableAntiforgery().AddEndpointFilter<FiltroValidaciones<CrearActorDTO>>();
             group.MapDelete("/{id:int}", Borrar);
             return group;
         }
@@ -51,8 +53,10 @@ namespace minimalAPIPeliculas.Endpoints
             return TypedResults.Ok(actoresdto);
         }
 
-        static async Task<Created<ActorDTO>> Crear([FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorio, IOutputCacheStore outputCacheStore, IMapper mapper, IAlmacenadorArchivos almacenadorArchivos)
+        static async Task<Results<Created<ActorDTO>, ValidationProblem>> Crear([FromForm] CrearActorDTO crearActorDTO, IRepositorioActores repositorio, IOutputCacheStore outputCacheStore, IMapper mapper, IAlmacenadorArchivos almacenadorArchivos)
         {
+            
+
             var actor = mapper.Map<Actor>(crearActorDTO);
 
             if (crearActorDTO.Foto is not null)
