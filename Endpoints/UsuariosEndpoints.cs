@@ -19,6 +19,7 @@ namespace minimalAPIPeliculas.Endpoints
         public static RouteGroupBuilder MapUsuarios(this RouteGroupBuilder group)
         {
             group.MapPost("/registrar", Registrar).AddEndpointFilter<FiltroValidaciones<CredencialesUsuarioDTO>>();
+            group.MapPost("/login", Login).AddEndpointFilter<FiltroValidaciones<CredencialesUsuarioDTO>>();
             return group;
         }
 
@@ -30,15 +31,37 @@ namespace minimalAPIPeliculas.Endpoints
                 Email = credencialesUsuarioDTO.Email
             };
 
-            var resultado = await userManager.CreateAsync(usuario,credencialesUsuarioDTO.Password);
+            var resultado = await userManager.CreateAsync(usuario, credencialesUsuarioDTO.Password);
 
             if (resultado.Succeeded)
             {
-                var credencialesRespuesta = ConstruirToken(credencialesUsuarioDTO,configuration);
+                var credencialesRespuesta = ConstruirToken(credencialesUsuarioDTO, configuration);
                 return TypedResults.Ok(credencialesRespuesta);
-            }else
+            }
+            else
             {
                 return TypedResults.BadRequest(resultado.Errors);
+            }
+        }
+
+        static async Task<Results<Ok<RespuestaAutenticacionDTO>, BadRequest<string>>> Login(CredencialesUsuarioDTO credencialesUsuarioDTO, [FromServices] SignInManager<IdentityUser> signInManager, [FromServices] UserManager<IdentityUser> userManager, IConfiguration configuration)
+        {
+            var usuario = await userManager.FindByEmailAsync(credencialesUsuarioDTO.Email);
+            if (usuario is null)
+            {
+                return TypedResults.BadRequest("Login incorrecto");
+            }
+
+            var resultado = await signInManager.CheckPasswordSignInAsync(usuario, credencialesUsuarioDTO.Password, lockoutOnFailure: false);
+
+            if (resultado.Succeeded)
+            {
+                var respuestAuthenticacion = ConstruirToken(credencialesUsuarioDTO, configuration);
+                return TypedResults.Ok(respuestAuthenticacion);
+            }
+            else
+            {
+                return TypedResults.BadRequest("Login incorrecto");
             }
         }
 
@@ -47,7 +70,7 @@ namespace minimalAPIPeliculas.Endpoints
             var claims = new List<Claim>
             {
                 new Claim("email", credencialesUsuarioDTO.Email),
-                new Claim("Lo que yo quiera", "Cualquier otro  valor")
+                new Claim("Lo que yo quiera", "Cualquier otro  valor") //Aqui se coloca estos textos de esta manera ya que aqui se puede colocar lo que sea
             };
 
             var llave = Llaves.ObtenerLlave(configuration);
