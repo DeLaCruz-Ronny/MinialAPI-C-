@@ -20,9 +20,9 @@ namespace minimalAPIPeliculas.Endpoints
             group.MapGet("/", ObtenerGeneros)
                 .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("generos_get")).RequireAuthorization();
             group.MapGet("/{id:int}", ObtenerGeneroPorId);
-            group.MapPost("/", CrearGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>();
-            group.MapPut("/{id:int}", ActualizarGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>();
-            group.MapDelete("/{id:int}", BorrarGenero);
+            group.MapPost("/", CrearGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>().RequireAuthorization("esAdmin");
+            group.MapPut("/{id:int}", ActualizarGenero).AddEndpointFilter<FiltroValidaciones<CrearGeneroDTO>>().RequireAuthorization("esAdmin");
+            group.MapDelete("/{id:int}", BorrarGenero).RequireAuthorization("esAdmin");
             return group;
         }
 
